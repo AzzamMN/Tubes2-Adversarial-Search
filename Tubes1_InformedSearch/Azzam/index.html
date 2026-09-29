@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Informed Search: UCS vs A*</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background: #111; color: #eee; margin: 20px; }
+        canvas { border: 1px solid #555; background: #222; cursor: crosshair; }
+        .panel { display: flex; gap: 20px; margin-bottom: 20px; }
+        .control-group { background: #333; padding: 15px; border-radius: 5px; }
+        button { background: #444; color: #fff; border: 1px solid #666; padding: 8px 15px; cursor: pointer; }
+        button:hover { background: #555; }
+        select { background: #222; color: #fff; border: 1px solid #555; padding: 5px; }
+        .stats { font-size: 1.1em; color: #0f0; }
+        .legend span { display: inline-block; width: 15px; height: 15px; margin-right: 5px; vertical-align: middle; }
+    </style>
+</head>
+<body>
+    <h2>Evaluasi Asimtotik: Uniform Cost Search vs A* Search</h2>
+    <div class="panel">
+        <div class="control-group">
+            <label>Algoritma Agen: </label>
+            <select id="algoSelect">
+                <option value="UCS">UCS (h = 0)</option>
+                <option value="A*_Manhattan">A* (h = Manhattan)</option>
+                <option value="A*_Euclidean">A* (h = Euclidean)</option>
+                <option value="A*_Bad">A* (h = Euclidean Squared) [INADMISSIBLE]</option>
+            </select>
+            <br><br>
+            <button onclick="generateMap()">Generate Map Baru</button>
+            <button onclick="runAgent()">Eksekusi Agen</button>
+            <br><br>
+            <label><input type="checkbox" id="debugOverlay" checked> Aktifkan Debug Overlay (Expanded Nodes)</label>
+        </div>
+        <div class="control-group">
+            <h3>Metrik Kinerja (O(b^d))</h3>
+            <div id="stats" class="stats">
+                Nodes Expanded: 0<br>
+                Path Cost (g(n)): 0<br>
+                Execution Time: 0 ms
+            </div>
+        </div>
+        <div class="control-group legend">
+            <h3>Legenda Terrain</h3>
+            <div><span style="background: #333;"></span> Ground (Cost: 1)</div>
+            <div><span style="background: #2E8B57;"></span> Pohon (Cost: 3)</div>
+            <div><span style="background: #1E90FF;"></span> Sungai (Cost: 5)</div>
+            <div><span style="background: #8B4513;"></span> Tembok/Rumah (Impassable)</div>
+            <div><span style="background: #FFFF00;"></span> Player (Target)</div>
+            <div><span style="background: #FF0000;"></span> NPC (Agen)</div>
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <script src="PriorityQueue.js"></script>
+    <script src="agent.js"></script>
+</body>
+</html>

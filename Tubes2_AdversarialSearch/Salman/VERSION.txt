@@ -1,0 +1,9 @@
+Samurai Duel V13.3 — Clean Visual Layout
+
+Fixes:
+- Uses clean arena artwork without duplicated HUD text/cards.
+- Removes duplicated stage fighter overlays at rest.
+- HTML owns all HP/Stamina/turn/card text.
+- Larger readable typography.
+- Cleaner attack/guard/counter card animations.
+- AI/Minimax/Alpha-Beta logic retained from V13.2.

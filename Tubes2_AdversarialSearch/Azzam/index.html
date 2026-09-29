@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTERCEPT — Adversarial Search | Kelompok 13</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     HEADER
+     ══════════════════════════════════════════════════════════ -->
+<header>
+    <div>
+        <h1>INTERCEPT</h1>
+        <div class="sub">Tubes Besar 2 · Adversarial Search · Kelompok 13</div>
+    </div>
+    <span class="badge">Minimax &amp; Alpha-Beta</span>
+</header>
+
+<main>
+
+<!-- ════════════════════════════════════════════════════════════
+     KANVAS PERMAINAN
+     ══════════════════════════════════════════════════════════ -->
+<section class="game-area">
+    <div class="canvas-wrapper">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- Legenda Warna Sel -->
+    <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:#3d6b50"></div>Rumput</div>
+        <div class="leg"><div class="leg-dot" style="background:#2a2a2a"></div>Tembok</div>
+        <div class="leg"><div class="leg-dot" style="background:#1e4d1e"></div>Pohon</div>
+        <div class="leg"><div class="leg-dot" style="background:#1a3d5c"></div>Sungai</div>
+        <div class="leg"><div class="leg-dot" style="background:#4a9eff;border-radius:50%"></div>Player&nbsp;(WASD)</div>
+        <div class="leg"><div class="leg-dot" style="background:#ff4a4a;border-radius:50%"></div>NPC&nbsp;(AI)</div>
+        <div class="leg"><div class="leg-dot" style="background:#f1c40f"></div>EXIT&nbsp;⭐</div>
+    </div>
+
+    <!-- Penjelasan heat map -->
+    <div class="heat-note">
+        Debug Overlay (Heat Map):
+        <span class="hot">Merah</span> = keunggulan NPC ·
+        <span class="cold">Biru</span> = keunggulan Player
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     PANEL KONTROL
+     ══════════════════════════════════════════════════════════ -->
+<aside class="panel">
+
+    <!-- ── Status Permainan ─────────────────────────────────── -->
+    <div class="ps">
+        <h3>Status Permainan</h3>
+        <div id="game-status">🎮 Giliran Player</div>
+        <div class="stat-row">
+            <div class="stat-card">
+                <div class="lbl">Turn</div>
+                <div class="val" id="turn-counter">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="lbl">Kedalaman</div>
+                <div class="val" id="depth-display">6</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Pilihan Algoritma NPC ─────────────────────────────── -->
+    <div class="ps">
+        <h3>Algoritma NPC</h3>
+        <div class="algo-list">
+
+            <button class="algo-btn" id="btn-minimax"
+                    onclick="game.setAlgorithm('minimax'); _setAlgo('minimax')">
+                <span class="algo-num">1</span>
+                <span>
+                    <span class="algo-name">Pure Minimax</span>
+                    <span class="algo-desc">Ekspansi penuh — O(b<sup>d</sup>)</span>
+                </span>
+            </button>
+
+            <button class="algo-btn active" id="btn-alphabeta"
+                    onclick="game.setAlgorithm('alphabeta'); _setAlgo('alphabeta')">
+                <span class="algo-num">2</span>
+                <span>
+                    <span class="algo-name">Alpha-Beta Pruning</span>
+                    <span class="algo-desc">Pemangkasan α-β — ~O(b<sup>d/2</sup>)</span>
+                </span>
+            </button>
+
+            <button class="algo-btn" id="btn-alphabeta-ordered"
+                    onclick="game.setAlgorithm('alphabeta_ordered'); _setAlgo('alphabeta-ordered')">
+                <span class="algo-num">3</span>
+                <span>
+                    <span class="algo-name">AB + Move Ordering</span>
+                    <span class="algo-desc">Pengurutan heuristik sebelum pruning</span>
+                </span>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- ── Kedalaman Pencarian ───────────────────────────────── -->
+    <div class="ps">
+        <h3>Kedalaman Pencarian (Plies)</h3>
+        <div class="depth-row">
+            <button class="depth-btn" id="d2" onclick="game.setDepth(2); _setDepth(2)">2</button>
+            <button class="depth-btn" id="d4" onclick="game.setDepth(4); _setDepth(4)">4</button>
+            <button class="depth-btn active" id="d6" onclick="game.setDepth(6); _setDepth(6)">6</button>
+            <button class="depth-btn" id="d8" onclick="game.setDepth(8); _setDepth(8)">8</button>
+        </div>
+    </div>
+
+    <!-- ── Perbandingan Node yang Diekspansi ─────────────────── -->
+    <div class="ps">
+        <h3>Perbandingan Node yang Diekspansi</h3>
+        <table class="cmp-table">
+            <thead>
+                <tr>
+                    <th>Algoritma</th>
+                    <th>Nodes</th>
+                    <th>Waktu</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Pure Minimax -->
+                <tr>
+                    <td class="alg-name-cell">
+                        <div>
+                            <span class="alg-dot" style="background:#e74c3c"></span>
+                            Minimax
+                        </div>
+                        <div class="bar-wrap">
+                            <div class="bar" id="bar-minimax"
+                                 style="width:100%;background:#e74c3c"></div>
+                        </div>
+                    </td>
+                    <td class="node-val" id="nodes-minimax">—</td>
+                    <td class="time-val" id="time-minimax">—</td>
+                </tr>
+                <!-- Alpha-Beta -->
+                <tr>
+                    <td class="alg-name-cell">
+                        <div>
+                            <span class="alg-dot" style="background:#e67e22"></span>
+                            Alpha-Beta
+                        </div>
+                        <div class="bar-wrap">
+                            <div class="bar" id="bar-alphabeta"
+                                 style="width:0%;background:#e67e22"></div>
+                        </div>
+                    </td>
+                    <td class="node-val" id="nodes-alphabeta">—</td>
+                    <td class="time-val" id="time-alphabeta">—</td>
+                </tr>
+                <!-- AB + Move Ordering -->
+                <tr>
+                    <td class="alg-name-cell">
+                        <div>
+                            <span class="alg-dot" style="background:#00b894"></span>
+                            AB+Ordering
+                        </div>
+                        <div class="bar-wrap">
+                            <div class="bar" id="bar-alphabeta-ordered"
+                                 style="width:0%;background:#00b894"></div>
+                        </div>
+                    </td>
+                    <td class="node-val" id="nodes-alphabeta-ordered">—</td>
+                    <td class="time-val" id="time-alphabeta-ordered">—</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── Debug Overlay + Reset ─────────────────────────────── -->
+    <div class="ps">
+        <h3>Debug &amp; Kontrol</h3>
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="game.reset()">↺ Reset (R)</button>
+            <button class="btn btn-secondary" id="debug-toggle"
+                    onclick="game.toggleHeatMap()">🌡 Heat Map: ON</button>
+        </div>
+        <div class="keys-hint">
+            <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Gerakkan Player<br>
+            <kbd>R</kbd> Reset permainan<br>
+            Tujuan Player: capai EXIT ⭐ (pojok kiri atas)<br>
+            Tujuan NPC &nbsp;: cegat / blokir Player
+        </div>
+    </div>
+
+    <!-- ── Log Permainan ─────────────────────────────────────── -->
+    <div class="ps log-area">
+        <h3>Log Permainan</h3>
+        <div id="battle-log"></div>
+    </div>
+
+</aside>
+</main>
+
+<!-- ── Scripts ─────────────────────────────────────────────── -->
+<script src="minimax.js"></script>
+<script src="game.js"></script>
+<script>
+    /* Helper: sinkronisasi state visual tombol algoritma */
+    function _setAlgo(id) {
+        document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById(`btn-${id}`);
+        if (target) target.classList.add('active');
+    }
+
+    /* Helper: sinkronisasi state visual tombol kedalaman */
+    function _setDepth(d) {
+        document.querySelectorAll('.depth-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById(`d${d}`);
+        if (target) target.classList.add('active');
+        const disp = document.getElementById('depth-display');
+        if (disp) disp.textContent = d;
+    }
+</script>
+
+</body>
+</html>

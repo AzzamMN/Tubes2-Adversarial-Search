@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas Besar KB - Kelompok 13</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap');
+        
+        :root {
+            --bg: #0f1115;
+            --surface: #1a1d24;
+            --surface-hover: #222630;
+            --border: #2a2d36;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-dim: rgba(59, 130, 246, 0.15);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            padding: 80px 20px 40px;
+            background: radial-gradient(circle at 50% -20%, var(--surface-hover), var(--bg) 70%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .team {
+            margin-top: 20px;
+            display: inline-flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            background: var(--surface);
+            padding: 8px 24px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .tahap-section {
+            margin-bottom: 60px;
+        }
+
+        .tahap-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tahap-title::after {
+            content: '';
+            height: 1px;
+            flex: 1;
+            background: var(--border);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .card h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .card .author {
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin: 0 0 24px 0;
+            flex: 1;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .tag {
+            background: var(--accent-dim);
+            color: #93c5fd;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .btn {
+            display: inline-block;
+            text-align: center;
+            background: var(--text);
+            color: var(--bg);
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: filter 0.2s;
+        }
+
+        .btn:hover {
+            filter: brightness(0.9);
+        }
+
+        .btn.disabled {
+            background: var(--surface-hover);
+            color: var(--muted);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AI Playground</h1>
+        <p class="subtitle">Kompilasi implementasi algoritma Search Engine (Informed & Adversarial) oleh Kelompok 13 untuk Mata Kuliah Kecerdasan Buatan.</p>
+        <div class="team">
+            <span>👨‍💻 Azzam M. Naufal (2007763)</span>
+            <span>👨‍💻 Salman Ghiffari (2509646)</span>
+            <span>👩‍💻 Zora R. Jinan (2509722)</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Tahap 2 -->
+        <section class="tahap-section">
+            <h2 class="tahap-title">Tahap 2: Adversarial Search</h2>
+            <div class="grid">
+                
+                <div class="card">
+                    <h3>INTERCEPT</h3>
+                    <div class="author">Azzam</div>
+                    <p>NPC menggunakan Minimax & Alpha-Beta untuk bergerak secara dinamis di grid dan mencegat rute player menuju exit. Termasuk live node-counting.</p>
+                    <div class="tags">
+                        <span class="tag">HTML5 Canvas</span>
+                        <span class="tag">AB + Move Ordering</span>
+                    </div>
+                    <a href="Tubes2_AdversarialSearch/Azzam/index.html" class="btn" target="_blank">Play Game</a>
+                </div>
+
+                <div class="card">
+                    <h3>Grid + Battle</h3>
+                    <div class="author">Zora</div>
+                    <p>Player bereksplorasi mencari EXIT. Jika jarak dengan NPC &le; 2, fase Turn-Based Battle (HP, Defend, Attack) akan terbuka yang digerakkan oleh Expectimax.</p>
+                    <div class="tags">
+                        <span class="tag">PyScript</span>
+                        <span class="tag">Expectimax</span>
+                    </div>
+                    <a href="Tubes2_AdversarialSearch/Zora/index.html" class="btn" target="_blank">Play Game</a>
+                </div>
+
+                <div class="card">
+                    <h3>Samurai Duel</h3>
+                    <div class="author">Salman</div>
+                    <p>Pertarungan simultan (Stackelberg). AI memilih aksi sebelum Player berdasarkan Evaluasi HP dan Stamina menggunakan Alpha-Beta Pruning.</p>
+                    <div class="tags">
+                        <span class="tag">Flask Backend</span>
+                        <span class="tag">Python</span>
+                    </div>
+                    <a href="#" class="btn disabled">Run via `python app.py`</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tahap 1 -->
+        <section class="tahap-section">
+            <h2 class="tahap-title">Tahap 1: Informed Search</h2>
+            <div class="grid">
+                
+                <div class="card">
+                    <h3>Interactive Map Pathfinding</h3>
+                    <div class="author">Azzam</div>
+                    <p>Simulator UCS & A* dengan terrain cost (Rumput, Pohon, Sungai) secara real-time pada 40x30 Grid HTML5 Canvas.</p>
+                    <div class="tags">
+                        <span class="tag">A* Manhattan</span>
+                        <span class="tag">Euclidean</span>
+                    </div>
+                    <a href="Tubes1_InformedSearch/Azzam/index.html" class="btn" target="_blank">Open App</a>
+                </div>
+
+                <div class="card">
+                    <h3>Grid Chase Engine</h3>
+                    <div class="author">Salman & Zora</div>
+                    <p>Implementasi PyScript di mana NPC secara reaktif terus menghitung ulang rute A* terpendek ke posisi Player yang dinamis.</p>
+                    <div class="tags">
+                        <span class="tag">PyScript</span>
+                        <span class="tag">Python</span>
+                    </div>
+                    <a href="Tubes1_InformedSearch/Salman_Zora/index.html" class="btn" target="_blank">Open App</a>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>
