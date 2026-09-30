@@ -101,7 +101,25 @@
                 </span>
             </button>
 
+            <button class="algo-btn" id="btn-expectimax"
+                    onclick="game.setAlgorithm('expectimax'); _setAlgo('expectimax')">
+                <span class="algo-num">4</span>
+                <span>
+                    <span class="algo-name">Expectimax (Gabungan Zora)</span>
+                    <span class="algo-desc">Asumsi player bergerak secara acak</span>
+                </span>
+            </button>
         </div>
+    </div>
+
+    <!-- ── Gaya Bermain NPC ──────────────────────────────────── -->
+    <div class="ps">
+        <h3>Gaya Bermain NPC (Evaluator Gabungan)</h3>
+        <select id="playstyleSelect" onchange="game.setPlaystyle(this.value)" style="width:100%; padding: 8px; background: #1a1d24; color: white; border: 1px solid #2a2d36; border-radius: 4px;">
+            <option value="balanced">Balanced (Menjaga jarak & memblokir)</option>
+            <option value="aggressive">Aggressive (Fokus mengejar Player - ala Salman)</option>
+            <option value="defensive">Defensive (Fokus menjaga EXIT - ala Zora)</option>
+        </select>
     </div>
 
     <!-- ── Kedalaman Pencarian ───────────────────────────────── -->
@@ -171,6 +189,21 @@
                     </td>
                     <td class="node-val" id="nodes-alphabeta-ordered">—</td>
                     <td class="time-val" id="time-alphabeta-ordered">—</td>
+                </tr>
+                <!-- Expectimax -->
+                <tr>
+                    <td class="alg-name-cell">
+                        <div>
+                            <span class="alg-dot" style="background:#9b59b6"></span>
+                            Expectimax
+                        </div>
+                        <div class="bar-wrap">
+                            <div class="bar" id="bar-expectimax"
+                                 style="width:0%;background:#9b59b6"></div>
+                        </div>
+                    </td>
+                    <td class="node-val" id="nodes-expectimax">—</td>
+                    <td class="time-val" id="time-expectimax">—</td>
                 </tr>
             </tbody>
         </table>

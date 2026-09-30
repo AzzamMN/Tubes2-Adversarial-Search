@@ -52,6 +52,7 @@ class Game {
 
         // ── State default ──
         this.algorithm   = 'alphabeta';
+        this.playstyle   = 'balanced';
         this.depth       = 6;
         this.showHeatMap = true;
 
@@ -242,7 +243,7 @@ class Game {
         const t0     = performance.now();
         const result = this.engine.getBestMove(
             this.npc, this.player, this.exit,
-            this.depth, this.algorithm
+            this.depth, this.algorithm, this.playstyle
         );
         const elapsed = (performance.now() - t0).toFixed(1);
 
@@ -493,6 +494,11 @@ class Game {
         this.algorithm = alg;
         this._addLog(`Algoritma diubah ke: ${this._algoLabel()}`);
         this._updateUI();
+    }
+
+    setPlaystyle(style) {
+        this.playstyle = style;
+        this._addLog(`Gaya bermain NPC diubah ke: ${style}`);
     }
 
     setDepth(d) {

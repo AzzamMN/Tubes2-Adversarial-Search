@@ -125,8 +125,6 @@ class MinimaxEngine {
         const distNE  = this.distMap[npc.y][npc.x];       // Jarak sesungguhnya ke Exit
 
         // Komponen (3): bonus blokade geometris
-        // NPC "memblokir" jika lebih dekat ke EXIT daripada Player,
-        // dan berada di rute terdekat Player → EXIT (toleransi ±2 langkah)
         const isOnPath     = (distNP + distNE) <= (distPE + 2);
         const hasAdvantage = distNE < distPE;
         const blockBonus   = (isOnPath && hasAdvantage)
@@ -136,10 +134,21 @@ class MinimaxEngine {
         // Komponen (4): mobilitas Player
         const mobility = this.getNeighbors(player).length;
 
-        return (15 - distNP) * 12    // (1) NPC ingin dekat Player
-             + distPE        *  8    // (2) NPC ingin Player jauh dari Exit
-             + blockBonus            // (3) Bonus blokade
-             - mobility      *  5;   // (4) Kurangi mobilitas Player
+        const style = this.currentPlaystyle || 'balanced';
+
+        if (style === 'aggressive') {
+            // Ala Salman: Agresif fokus mengejar, abaikan jarak exit
+            return (20 - distNP) * 20 - mobility * 5;
+        } else if (style === 'defensive') {
+            // Ala Zora: Fokus menjaga exit
+            return (distPE * 10) + blockBonus * 1.5 - distNE * 5;
+        } else {
+            // Balanced (Azzam)
+            return (15 - distNP) * 12    // (1) NPC ingin dekat Player
+                 + distPE        *  8    // (2) NPC ingin Player jauh dari Exit
+                 + blockBonus            // (3) Bonus blokade
+                 - mobility      *  5;   // (4) Kurangi mobilitas Player
+        }
     }
 
     // ─── Algoritma 1: Pure Minimax ───────────────────────────────
@@ -309,6 +318,41 @@ class MinimaxEngine {
         }
     }
 
+    // ─── Algoritma 4: Expectimax (Gabungan Zora) ─────────────────
+    // Asumsi: Player bergerak secara non-deterministik/probabilistik.
+    expectimax(npc, player, exit, depth, isMaximizing, nodesRef) {
+        nodesRef.count++;
+
+        if (npc.x === player.x && npc.y === player.y) return  10000 + depth;
+        if (player.x === exit.x  && player.y === exit.y)  return -10000 - depth;
+        if (depth === 0) return this.evaluate(npc, player, exit);
+
+        if (isMaximizing) {
+            const moves = this.getNeighbors(npc);
+            if (moves.length === 0) return this.evaluate(npc, player, exit);
+
+            let maxScore = -Infinity;
+            for (const move of moves) {
+                const score = this.expectimax(move, player, exit, depth - 1, false, nodesRef);
+                if (score > maxScore) maxScore = score;
+            }
+            return maxScore;
+        } else {
+            // Chance Node: Menghitung expected value
+            const moves = this.getNeighbors(player);
+            if (moves.length === 0) return this.evaluate(npc, player, exit);
+
+            let expectedValue = 0;
+            const prob = 1.0 / moves.length; // Asumsi pergerakan uniform/acak
+
+            for (const move of moves) {
+                const score = this.expectimax(npc, move, exit, depth - 1, true, nodesRef);
+                expectedValue += score * prob;
+            }
+            return expectedValue;
+        }
+    }
+
     // ─── Dispatcher Utama ────────────────────────────────────────
 
     /**
@@ -320,17 +364,18 @@ class MinimaxEngine {
      *
      * Returns: { move: {x,y}, nodes: number, comparison: {...} }
      */
-    getBestMove(npcPos, playerPos, exitPos, depth, algorithm) {
+    getBestMove(npcPos, playerPos, exitPos, depth, algorithm, playstyle = 'balanced') {
+        this.currentPlaystyle = playstyle;
         const candidateMoves = this.getNeighbors(npcPos);
         if (candidateMoves.length === 0) {
             return { move: npcPos, nodes: 0, comparison: null };
         }
 
         // Jalankan perbandingan (sekaligus mendapatkan langkah terbaik)
-        const comparison = this._compareAll(npcPos, playerPos, exitPos, depth, algorithm);
+        const comparison = this._compareAll(npcPos, playerPos, exitPos, depth, algorithm, playstyle);
 
         // Map nama algoritma ke hasil
-        const activeKey = algorithm; // 'minimax', 'alphabeta', atau 'alphabeta_ordered'
+        const activeKey = algorithm; // 'minimax', 'alphabeta', 'alphabeta_ordered', 'expectimax'
         
         return {
             move       : comparison[activeKey].bestMove || candidateMoves[0],
@@ -343,8 +388,8 @@ class MinimaxEngine {
      * Jalankan ketiga algoritma dari posisi yang sama, catat jumlah node
      * dan waktu komputasi untuk ditampilkan di panel perbandingan.
      */
-    _compareAll(npcPos, playerPos, exitPos, depth, selectedAlgorithm) {
-        const algorithms = ['minimax', 'alphabeta', 'alphabeta_ordered'];
+    _compareAll(npcPos, playerPos, exitPos, depth, selectedAlgorithm, playstyle) {
+        const algorithms = ['minimax', 'alphabeta', 'alphabeta_ordered', 'expectimax'];
         const result = {};
 
         for (const alg of algorithms) {
@@ -365,7 +410,7 @@ class MinimaxEngine {
 
             // Bug 5 Fix: Skip Pure Minimax di kedalaman > 6 jika tidak dipilih aktif,
             // untuk mencegah UI freeze (browser lag karena mengekspansi 65k+ node secara sinkron)
-            if (alg === 'minimax' && depth > 6 && selectedAlgorithm !== 'minimax') {
+            if ((alg === 'minimax' || alg === 'expectimax') && depth > 6 && selectedAlgorithm !== alg) {
                 result[alg] = { bestMove: null, nodes: "Skipped", time: "-" };
                 continue;
             }
@@ -378,6 +423,8 @@ class MinimaxEngine {
                     score = this.minimax(move, playerPos, exitPos, depth - 1, false, sub);
                 } else if (alg === 'alphabeta') {
                     score = this.alphabeta(move, playerPos, exitPos, depth - 1, alpha, beta, false, sub);
+                } else if (alg === 'expectimax') {
+                    score = this.expectimax(move, playerPos, exitPos, depth - 1, false, sub);
                 } else {
                     score = this.alphabetaOrdered(move, playerPos, exitPos, depth - 1, alpha, beta, false, sub);
                 }

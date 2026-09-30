@@ -208,5 +208,36 @@ canvas.addEventListener('mousedown', function(e) {
     }
 });
 
+// Fitur Gabungan: Chase Mode (terinspirasi dari versi PyScript Salman & Zora)
+let chaseInterval = null;
+let isChasing = false;
+
+function toggleChase() {
+    isChasing = !isChasing;
+    const btn = document.getElementById('chaseBtn');
+    if (isChasing) {
+        btn.innerText = "🛑 Stop Chase";
+        btn.classList.add('active');
+        chaseInterval = setInterval(() => {
+            if (path.length > 0) {
+                // NPC melangkah ke node pertama dari path
+                const nextStep = path[0];
+                npc.x = nextStep.x;
+                npc.y = nextStep.y;
+                runAgent(); // Hitung ulang path setelah bergerak
+                
+                if (npc.x === player.x && npc.y === player.y) {
+                    toggleChase(); // Berhenti jika tertangkap
+                    alert("Player tertangkap!");
+                }
+            }
+        }, 300); // Kecepatan NPC (300ms per langkah)
+    } else {
+        btn.innerText = "🏃‍♂️ Start Chase Mode";
+        btn.classList.remove('active');
+        clearInterval(chaseInterval);
+    }
+}
+
 // Initialize
 generateMap();
