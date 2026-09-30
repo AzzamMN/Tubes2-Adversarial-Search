@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NPC Pathfinding + Battle Minimax — Tugas Besar AI</title>
+
+  <!-- PyScript Resources -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.11.1/core.css" />
+  <script type="module" src="https://pyscript.net/releases/2024.11.1/core.js"></script>
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>NPC Pathfinding — Grid 20×20</h1>
+    <p>
+      Tugas Besar Kecerdasan Buatan: NPC mengejar Player menggunakan UCS atau A*
+      (heuristik Manhattan / Euclidean) di atas grid dengan medan berbeda-beda cost.
+      Gerakkan Player dengan panah atau WASD — NPC akan mencari ulang jalurnya setiap
+      kali Player berpindah sel. Jika NPC sudah dekat (jarak Manhattan ≤ 2), game masuk
+      <b>mode battle</b> turn-based: NPC memilih aksi dengan Minimax / Alpha-Beta / Expectimax.
+    </p>
+  </header>
+
+  <main>
+    <div id="canvasWrap">
+      <canvas id="gameCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <div id="panel">
+
+      <section>
+        <h2>ALGORITMA NPC</h2>
+        <select id="algoSelect">
+          <option value="ucs">UCS — Uniform Cost Search</option>
+          <option value="astar_manhattan" selected>A* — Manhattan Distance</option>
+          <option value="astar_euclidean">A* — Euclidean Distance</option>
+        </select>
+        <button id="resetBtn">Reset Permainan</button>
+      </section>
+
+
+      <section id="battleSection" class="hidden">
+        <h2>MODE BATTLE (turn-based)</h2>
+        <div class="hp-line"><span>Player</span><span id="playerHpTxt"></span></div>
+        <div class="hp-track"><div id="playerHpBar" class="hp-fill player"></div></div>
+        <div class="hp-line"><span>NPC</span><span id="npcHpTxt"></span></div>
+        <div class="hp-track"><div id="npcHpBar" class="hp-fill npc"></div></div>
+        <div class="btn-row">
+          <button id="btnAttack">1 Attack</button>
+          <button id="btnDefend">2 Defend</button>
+          <button id="btnPotion">3 Potion</button>
+        </div>
+        <div id="battleLog"></div>
+        <h2>DEBUG: skor aksi &amp; node count</h2>
+        <div id="debugTable"></div>
+      </section>
+
+      <section>
+        <h2>PENGATURAN AI BATTLE</h2>
+        <label>Algoritma NPC
+          <select id="battleAlgo">
+            <option value="minimax">Minimax</option>
+            <option value="alphabeta" selected>Alpha-Beta Pruning</option>
+            <option value="alphabeta_early">Alpha-Beta + Early Stop</option>
+            <option value="expectimax">Expectimax (lawan acak)</option>
+          </select></label>
+        <label>Fungsi evaluasi
+          <select id="battleEval">
+            <option value="balanced" selected>Balanced (HP + potion + shield)</option>
+            <option value="hp">Selisih HP</option>
+            <option value="aggressive">Agresif</option>
+            <option value="defensive">Defensif</option>
+            <option value="zero">Nol (kontrol)</option>
+          </select></label>
+        <label>Urutan aksi
+          <select id="battleOrder">
+            <option value="default" selected>attack, defend, potion</option>
+            <option value="reverse">potion, defend, attack</option>
+            <option value="defend_first">defend, potion, attack</option>
+            <option value="heuristic">heuristic (best-first)</option>
+          </select></label>
+        <label>Kedalaman (ply)
+          <select id="battleDepth">
+            <option>1</option><option>2</option><option>3</option><option selected>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+          </select></label>
+        <label>Budget node early stop
+          <select id="battleLimit">
+            <option>25</option><option selected>100</option><option>250</option><option>1000</option>
+          </select></label>
+        <label class="chk"><input type="checkbox" id="dbgToggle" checked /> Tampilkan debug overlay di canvas</label>
+      </section>
+
+      <section>
+        <h2>LEGENDA TILE</h2>
+        <div class="legend-row"><span class="swatch" style="background:#3f6b34"></span> Rumput / Jalan (cost 1)</div>
+        <div class="legend-row"><span class="swatch" style="background:#8a6d3b"></span> Lumpur / Semak (cost 3)</div>
+        <div class="legend-row"><span class="swatch" style="background:#2b2f33"></span> Pohon / Rumah (unwalkable)</div>
+        <div class="legend-row"><span class="swatch" style="background:#235d82"></span> Sungai (unwalkable)</div>
+        <div class="legend-row"><span class="swatch" style="background:#a9744a"></span> Jembatan (cost 1)</div>
+        <div class="overlay-legend">
+          <div class="legend-row"><span class="swatch" style="background:rgba(255,60,60,0.55)"></span> Closed set (node diekspansi)</div>
+          <div class="legend-row"><span class="swatch" style="background:rgba(255,220,60,0.55)"></span> Open set (dalam antrean)</div>
+          <div class="legend-row"><span class="swatch" style="background:rgba(60,255,120,0.7)"></span> Jalur akhir (final path)</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>STATISTIK PENCARIAN</h2>
+        <div class="stat-row"><span>Total node diekspansi</span><span id="statExpanded">0</span></div>
+        <div class="stat-row"><span>Total cost path g(n)</span><span id="statCost">0</span></div>
+        <div class="stat-row"><span>Waktu eksekusi</span><span><span id="statTime">0</span> ms</span></div>
+        <p id="statStatus">Bergerak dengan WASD / Panah</p>
+      </section>
+
+      <section>
+        <h2>KONTROL</h2>
+        <p class="keys">
+          <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd>
+          atau <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> untuk menggerakkan
+          Player (lingkaran biru). Saat battle: <kbd>1</kbd> Attack, <kbd>2</kbd> Defend, <kbd>3</kbd> Potion. NPC (lingkaran merah muda) akan mengejar
+          menggunakan algoritma yang dipilih di atas.
+        </p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Hapus atribut config, cukup panggil main.py -->
+<script type="py" src="main.py"></script>
+
+</body>
+</html>
